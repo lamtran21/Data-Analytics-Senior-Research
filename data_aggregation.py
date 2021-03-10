@@ -1,10 +1,11 @@
 import pandas as pd
 import os
+import numpy as np
+from sklearn import preprocessing
 
-# todo: create 3 dataframes. 1: landmarks. 2: attributes. 3: demographic
-# todo: 3 columns for attractiveness: 2 from attributes and 1 from demographic
+# todo: remove Nan => normalize => group by (mean for ratings, mode for demographics) => join 3 dfs
 
-# todo: xy in landmarks are strings. Needs to convert to int.
+# todo: xy in landmarks are strings. Needs to convert to int. (will do later)
 
 
 def create_landmarks_df(path):
@@ -42,17 +43,41 @@ def create_landmarks_df(path):
 def create_attributes_df(path):
     """
     A program that reads in an excel file that contains attribute scores for 2222 people and turns it into
-    a pandas data frame. The program also filters out columns that are not needed in the future, then group by
-    to get the average score of each person (as one person is rated by multiple people).
+    a pandas data frame. The program only reads in the primary key column (filename), secondary key column
+    (Image #), attractiveness ratings and unattractiveness ratings.
 
     :param path: path to the excel file
     :return: a data frame that contains attribute scores for 2222 people.
     """
-    attributes = pd.read_excel(path)
+    attributes = pd.read_excel(path, na_values=['NaN'], usecols="A,B,W,AD")
     # print(attributes.head())
-    print(attributes.shape)
-    print(set(attributes['Filename']))
+    # print(attributes.shape)
     return attributes
+
+
+def create_demographic_df(path):
+    """
+    A program that reads in an excel file that contains demographic information for 2222 people and turns it into
+    a pandas data frame. The program only reads in the primary key column (filename), secondary key column
+    (Image #), age, gender, race, and attractiveness ratings.
+
+    :param path: path to the excel file
+    :return: a data frame that contains demographic information for 2222 people.
+    """
+    demographic = pd.read_excel(path, na_values=['NaN'], usecols="A,B,C,D,O,S")
+    # print(demographic.head())
+    # print(demographic.shape)
+    # look into correlation between attractiveness - unattractiveness before deciding if use unattractiveness
+    return demographic
+
+
+def normalize_ratings(df, rating_col):
+    x_array = np.array(df[rating_col])
+    normalized_x = preprocessing.normalize([x_array])
+    print(normalized_x)
+    print(max(normalized_x))
+    print(min(normalized_x))
+    print(np.average(normalized_x))
 
 
 def main():
@@ -60,6 +85,9 @@ def main():
     # landmarks = create_landmarks_df(path + "annotations/Face Annotations/Images and Annotations/")
     attributes = create_attributes_df(path + "2kattributes/Full Attribute Scores/psychology attributes/"
                                              "psychology-attributes.xlsx")
+    # demographic = create_demographic_df(path + "2kattributes/Full Attribute Scores/demographic & others labels/"
+    #                                           "demographic-others-labels.xlsx")
+    # normalize_ratings(attributes, "attractive") <- needs to remove NaN from df
 
 
 main()
