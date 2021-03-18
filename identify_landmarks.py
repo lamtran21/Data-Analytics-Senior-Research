@@ -1,10 +1,8 @@
-import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 import cv2
 
 # read 1st file annotation
-file = open("L:/Spring 2021/DA 401/10k US Faces Data/annotations/Face Annotations/Images and Annotations/3_landmarks.txt", "r")
+file = open("L:/Spring 2021/DA 401/10k US Faces Data/annotations/Face Annotations/Images and Annotations/6_landmarks.txt", "r")
 coordinates = file.read()
 list_coordinates = coordinates.split()
 x_coordinate, y_coordinate = [], []
@@ -16,11 +14,11 @@ for i in range(len(list_coordinates)):
         y_coordinate.append(float(list_coordinates[i]))
 
 # read the image
-img = plt.imread("L:/Spring 2021/DA 401/10k US Faces Data/annotations/Face Annotations/Images and Annotations/3.jpg")
+img = plt.imread("L:/Spring 2021/DA 401/10k US Faces Data/annotations/Face Annotations/Images and Annotations/6.jpg")
 bw_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # since opencv reads in BGR channel while the pic is in RGB channel
 height, width, channels = bw_img.shape         # get dimensions to rescale later
 
-for i in range(0, 8):
+for i in range(0, 77):
     # 0-7 is left eyebrow. 0 is tail of eyebrow. Points go clockwise
     # 8-23 is face shape. 8 is second point to the left of middle of forehead. Points go counter-clockwise
     # 24-31 is right eyebrow. 24 is lower point of head of eyebrow. Points go clockwise
