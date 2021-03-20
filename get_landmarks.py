@@ -41,14 +41,14 @@ def get_landmarks():
     model3D = frontalize.ThreeD_Model(this_path + "/frontalization_models/model3Ddlib.mat", 'model_dlib')
 
     # these images cannot be recognized due to cropping of the face (crop out the hair and ear)
-    list_unrecognizable = [42, 303, 451, 650, 770, 829, 938, 1603, 1726, 1727, 2211]  # for (80, 101)
+    list_unrecognizable = [42, 162, 215, 303, 451, 650, 770, 829, 901, 938, 1134, 1603, 1726, 1727, 2087, 2211]
 
     landmarks_dict = {}
 
     start_time = time.time()  # control for run time. 100 images ~ 6.5 minutes => 2200 images ~ 2.4 hours
 
     # load query image
-    for i in range(1, 3):
+    for i in range(1, 2223):
         if i not in list_unrecognizable:
             file_path = os.path.join(
                 "L:/Spring 2021/DA 401/10k US Faces Data/annotations/Face Annotations/Images and Annotations/",
