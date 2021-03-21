@@ -1,19 +1,21 @@
 import pandas as pd
 import ast
 import math
-from sklearn import linear_model
-from sklearn.metrics import mean_squared_error, r2_score
 
 
 def distance(p1, p2):
+    """ A function that calculates the distance between p1 and p2"""
     return math.sqrt(((int(p1[0]) - int(p2[0])) ** 2) + ((int(p1[1]) - int(p2[1])) ** 2))
 
 
 def midpoint(p1, p2):
+    """ A function that get the midpoint from 2 points p1 and p2"""
     return [(p1[0] + p2[0]) // 2, (p1[1] + p2[1]) // 2]
 
 
 def facial_attributes():
+    """ A function that creates 35 facial attributes from facial landmarks"""
+
     agg = pd.read_csv('aggregated_df.csv')
     agg['landmarks'] = agg['landmarks'].apply(lambda x: x[1:-1].split('\n '))
     agg['landmarks'] = agg['landmarks'].apply(lambda x: [ast.literal_eval(i.replace(' ', ',')) for i in x])
@@ -62,17 +64,6 @@ def facial_attributes():
         agg.iloc[:, i] = agg.iloc[:, i].apply(lambda x: abs(x - agg.iloc[:, i].mean()))
     
     agg.to_csv('facial_attributes.csv', index=False)
-
-    agg_X = agg.iloc[1:2000, 8:15]
-    agg_y = agg.iloc[1:2000, 3]
-    agg_X_test = agg.iloc[2001:, 8:15]
-    agg_y_test = agg.iloc[2001:, 3]
-    print(agg_y_test)
-    regr = linear_model.LinearRegression()
-    regr.fit(agg_X, agg_y)
-    pred = regr.predict(agg_X_test)
-    print(r2_score(agg_y_test, pred))
-    # has negative r2 because too many variables. if 5-15 (include control vars) it goes to 30
     return agg
 
 
