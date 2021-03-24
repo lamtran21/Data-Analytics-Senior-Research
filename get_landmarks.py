@@ -98,6 +98,43 @@ def get_landmarks():
     return landmarks_dict
 
 
+def visuals():
+    """ for report"""
+    file_path = "L:/Spring 2021/DA 401/10k US Faces Data/49faces/Publication Friendly 49-Face Database/49 Face Images/4451440734_0c5de7019d_o.jpg"
+    img = cv2.imread(file_path, 1)
+    img = cv2.resize(img, (80, 100))
+
+    plt.title('Query Image')
+    plt.imshow(img[:, :, ::-1])  #::-1 because cv2 reads in BGR which is inverse of RGB
+    plt.savefig('figure2.jpg')
+
+    # extract landmarks from the query image
+    # list containing a 2D array with points (x, y) for each face detected in the query image
+    lmarks = feature_detection.get_landmarks(img)
+
+    model3D = frontalize.ThreeD_Model(this_path + "/frontalization_models/model3Ddlib.mat", 'model_dlib')
+    proj_matrix, camera_matrix, rmat, tvec = calib.estimate_camera(model3D, lmarks[0])
+
+    # load mask to exclude eyes from symmetry
+    eyemask = np.asarray(io.loadmat('frontalization_models/eyemask.mat')['eyemask'])
+    # perform frontalization
+    frontal_raw, frontal_sym = frontalize.frontalize(img, proj_matrix, model3D.ref_U, eyemask)
+
+    plt.figure()
+    plt.title('Frontalized no symmetry')
+    plt.imshow(frontal_raw[:, :, ::-1])
+    plt.savefig('figure3.jpg')
+
+    lmarks = feature_detection.get_landmarks(frontal_raw)
+    plt.figure()
+    plt.title('Landmarks Detected')
+    plt.imshow(frontal_raw[:, :, ::-1])
+    plt.scatter(lmarks[0][:, 0], lmarks[0][:, 1])
+    plt.savefig('figure4.jpg')
+    plt.show()
+
+
 if __name__ == "__main__":
-    get_landmarks()
+    #get_landmarks()
+    visuals()
     # explore_images()

@@ -105,13 +105,6 @@ def data_aggregation():
     agg = agg[['Filename', 'Image #', 'landmarks', 'average_attractive', 'average_unattractive', 'age', 'gender', 'race']]
     agg.to_csv('aggregated_df.csv', index=False)
 
-    # Data exploration
-    # print(agg.groupby('gender')['average_attractive'].mean())
-    # print(agg.groupby('age')['average_attractive'].mean())
-    # print(agg.groupby('race')['average_attractive'].mean())
-    # plt.hist(agg['average_attractive'])
-    # plt.show()
-
 
 if __name__ == "__main__":
     data_aggregation()
