@@ -13,8 +13,8 @@ this_path = os.path.dirname(os.path.abspath(__file__))
 
 
 def explore_images():
-    # Image has average size (203, 256). will resize to (80, 101) so dlib works better (it was trained on
-    # (80, 80) images)
+    # Image has average size (203, 256). will resize to (80, 101) while maintaining the average ratio so dlib works
+    # better (it was trained on (80, 80) images)
     sum_height, sum_width, count = 0, 0, 2222
 
     for i in range(1, 2223):
@@ -56,18 +56,9 @@ def get_landmarks():
             img = cv2.imread(file_path, 1)
             img = cv2.resize(img, (80, 101))
 
-            # plt.title('Query Image')
-            # plt.imshow(img[:, :, ::-1])  #::-1 because cv2 reads in BGR which is inverse of RGB
-            # plt.show()
-
             # extract landmarks from the query image
             # list containing a 2D array with points (x, y) for each face detected in the query image
             lmarks = feature_detection.get_landmarks(img)
-
-            # plt.figure()
-            # plt.title('Landmarks Detected')
-            # plt.imshow(img[:, :, ::-1])
-            # plt.scatter(lmarks[0][:, 0], lmarks[0][:, 1])
 
             # perform camera calibration according to the first face detected
             try:
@@ -81,14 +72,6 @@ def get_landmarks():
             # perform frontalization
             frontal_raw, frontal_sym = frontalize.frontalize(img, proj_matrix, model3D.ref_U, eyemask)
 
-            # plt.figure()
-            # plt.title('Frontalized no symmetry')
-            # plt.imshow(frontal_raw[:, :, ::-1])
-            # plt.figure()
-            # plt.title('Frontalized with soft symmetry')
-            # plt.imshow(frontal_sym[:, :, ::-1])
-            # plt.show()
-
             frontal_lmarks = feature_detection.get_landmarks(frontal_raw)
 
             # put the new frontal landmarks into dictionary so could be input into dataframe later
@@ -99,7 +82,7 @@ def get_landmarks():
 
 
 def visuals():
-    """ for report"""
+    """Demo of the frontalization and landmark detection process for figure 2 in report"""
     file_path = "L:/Spring 2021/DA 401/10k US Faces Data/49faces/Publication Friendly 49-Face Database/49 Face Images/4451440734_0c5de7019d_o.jpg"
     img = cv2.imread(file_path, 1)
     img = cv2.resize(img, (80, 100))
@@ -132,6 +115,44 @@ def visuals():
     plt.scatter(lmarks[0][:, 0], lmarks[0][:, 1])
     plt.savefig('figure4.jpg')
     plt.show()
+
+
+def get_landmarks_49():
+    # Figure 6: Visual based on 49 images
+    this_path = os.path.dirname(os.path.abspath(__file__))
+
+    check.check_dlib_landmark_weights()
+
+    # load detections performed by dlib library on 3D model and Reference Image
+    model3D = frontalize.ThreeD_Model(this_path + "/frontalization_models/model3Ddlib.mat", 'model_dlib')
+
+    landmarks_dict = {}
+
+    # load query image
+    images = []
+    images_name = []
+    folder = "L:/Spring 2021/DA 401/10k US Faces Data/49faces/Publication Friendly 49-Face Database/49 Face images/"
+    for filename in os.listdir(folder):
+        img = cv2.imread(os.path.join(folder, filename))
+        if img is not None:
+            images.append(img)
+            images_name.append(filename)
+
+    for i in range(0, 49):
+        img = images[i]
+        img = cv2.resize(img, (80, 101))
+        lmarks = feature_detection.get_landmarks(img)
+        # perform camera calibration according to the first face detected
+        proj_matrix, camera_matrix, rmat, tvec = calib.estimate_camera(model3D, lmarks[0])
+        # load mask to exclude eyes from symmetry
+        eyemask = np.asarray(io.loadmat('frontalization_models/eyemask.mat')['eyemask'])
+        # perform frontalization
+        frontal_raw, frontal_sym = frontalize.frontalize(img, proj_matrix, model3D.ref_U, eyemask)
+        frontal_lmarks = feature_detection.get_landmarks(frontal_raw)
+
+        # put the new frontal landmarks into dictionary so could be input into dataframe later
+        landmarks_dict[images_name[i]] = frontal_lmarks[0]
+    return landmarks_dict
 
 
 if __name__ == "__main__":

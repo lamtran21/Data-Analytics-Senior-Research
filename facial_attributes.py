@@ -13,12 +13,15 @@ def midpoint(p1, p2):
     return [(p1[0] + p2[0]) // 2, (p1[1] + p2[1]) // 2]
 
 
-def facial_attributes():
+def facial_attributes(path, output, is_to_csv):
     """ A function that creates 35 facial attributes from facial landmarks"""
 
-    agg = pd.read_csv('aggregated_df.csv')
+    agg = pd.read_csv(path)
+    # reformat the landmarks column
     agg['landmarks'] = agg['landmarks'].apply(lambda x: x[1:-1].split('\n '))
     agg['landmarks'] = agg['landmarks'].apply(lambda x: [ast.literal_eval(i.replace(' ', ',')) for i in x])
+
+    num_col = len(agg.columns)
 
     # calculate facial attributes
     agg['1_face_length'] = agg['landmarks'].apply(lambda x: distance(x[27], x[8]))
@@ -60,12 +63,13 @@ def facial_attributes():
     agg['35_ratio_bottom_mid_face'] = agg['landmarks'].apply(lambda x: x[33][1] - midpoint(x[19],
                                         x[24])[1]) / agg['landmarks'].apply(lambda x: distance(x[8], x[33]))
     # subtract each value from the average of each column
-    for i in range(8, 43):
+    for i in range(num_col, num_col+35):
         agg.iloc[:, i] = agg.iloc[:, i].apply(lambda x: abs(x - agg.iloc[:, i].mean()))
-    
-    agg.to_csv('facial_attributes.csv', index=False)
+    if is_to_csv == 1:
+        agg.to_csv(output, index=False)
     return agg
 
 
+
 if __name__ == "__main__":
-    facial_attributes()
+    facial_attributes('aggregated_df.csv', 'facial_attributes.csv', 1)

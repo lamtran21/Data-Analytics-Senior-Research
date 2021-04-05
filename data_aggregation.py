@@ -22,11 +22,10 @@ def create_attributes_df(path):
     """
 
     # Read in files
-    attributes = pd.read_excel(path, na_values=['NaN'], usecols="A,B,W,AD")
+    attributes = pd.read_excel(path, na_values=['NaN'], usecols=['Filename', 'Image #', 'attractive', 'unattractive'])
 
     # Drop NA values
     attributes = attributes.dropna()  # drop 58 ratings
-    # print(len(set(attributes.iloc[:, 0])))  # no one among 2222 people is completely removed from data
 
     # Min-max normalize the attractive ratings
     attributes['attractive'] = (attributes['attractive'] - attributes['attractive'].min()) / \
@@ -59,7 +58,7 @@ def create_demographic_df(path):
     :param path: path to the excel file
     :return: a data frame that contains demographic information for 2222 people.
     """
-    demographic = pd.read_excel(path, na_values=['NaN'], usecols="A,B,C,D,O,S")
+    demographic = pd.read_excel(path, na_values=['NaN'], usecols=['Filename', 'Image #', 'Attractive', 'Age', "Gender", 'Race'])
 
     # Drop NA values
     demographic = demographic.dropna()  # remove 34 observations
@@ -106,5 +105,27 @@ def data_aggregation():
     agg.to_csv('aggregated_df.csv', index=False)
 
 
+def data_aggregation_49():
+    path = folder = "L:/Spring 2021/DA 401/10k US Faces Data/49faces/Publication Friendly 49-Face Database/"
+    attributes = create_attributes_df(path + "Attribute Scores/psychology attributes/psychology-attributes.xlsx")
+    demographic = create_demographic_df(path + "Attribute Scores/demographic & others labels/demographic-others-labels.xlsx")
+    landmarks = get_landmarks.get_landmarks_49()
+    landmarks = pd.Series(landmarks).to_frame().reset_index()
+    landmarks.columns = ['Filename', 'landmarks']
+
+    print(landmarks.head())
+    # merge datasets together
+    agg = pd.merge(attributes, demographic, on='Filename')
+    agg = pd.merge(agg, landmarks, on='Filename')
+    # calculate the average ratings
+    agg['average_attractive'] = (agg['attractive_x'] + agg['attractive_y']) / (agg['count_x'] + agg['count_y'])
+    agg['average_unattractive'] = agg['unattractive'] / agg['count_x']
+
+    agg = agg[['Filename', 'landmarks', 'average_attractive', 'average_unattractive', 'age', 'gender', 'race']]
+
+    agg.to_csv('aggregated_df_49.csv', index=False)
+
+
 if __name__ == "__main__":
-    data_aggregation()
+    # data_aggregation()
+    data_aggregation_49()

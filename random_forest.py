@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import seaborn as sb
 from scipy import stats
 import statsmodels.api as sm
+import facial_attributes
 
 
 def base_model():
@@ -28,16 +29,23 @@ def base_model():
     # remove unused columns from df (axis = 1 refers to column)
     df = df.drop(
         ['Filename', 'Image #', 'landmarks', 'average_attractive', 'average_unattractive'], axis=1)
-    #df = df.iloc[:, [2, 8, 13, 16, 18, 26, 28, 30, 31, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48]]
     # convert to numpy array
-    df = np.array(df)
+    # df1 = np.array(df)
+    # # base Linear model
+    # X2 = sm.add_constant(df1)
+    # est = sm.OLS(attractive_rating, X2)
+    # est2 = est.fit()
+    # print(est2.summary())
 
-    X2 = sm.add_constant(df)
-    est = sm.OLS(attractive_rating, X2)
-    est2 = est.fit()
-    print(est2.summary())
+    # get the sign of each variable by running univariate model
+    for i in range(10):
+        col = df.iloc[:, i]
+        col = np.array(col)
 
-    # has negative r2 because too many variables. if 5-15 (include control vars) it goes to 30%
+        X = sm.add_constant(col)
+        est = sm.OLS(attractive_rating, X)
+        est2 = est.fit()
+        print(est2.summary())
 
 
 def random_forest():
@@ -94,14 +102,15 @@ def random_forest():
     # Print out the variables and importance
     [print('Variable: {:20} Importance: {}'.format(*pair)) for pair in feature_importance];
 
-    # Note: race is not important. features of the upper face (eyebrows, eyes) are not important
-    # of the features that are of lower face, only the lower lip is not important
+    # Note: features of the upper face (eyebrows, eyes) are not important. Of the features that are of lower face,
+    # only the lower lip is not important
 
 
 def visual():
-    df = pd.read_csv('facial_attributes.csv')
+    """ For visualizations in final report"""
+    # df = pd.read_csv('facial_attributes.csv')
 
-    # Figure 2
+    # Figure 1: Distribution of attractiveness rating
     # sb.set_style('whitegrid')
     # sb.distplot(df['average_attractive'], kde=False)
     # plt.xlabel('Normalized attractiveness ratings')
@@ -109,21 +118,36 @@ def visual():
     # plt.savefig('figure1.jpg')
     # plt.show()
 
-    #Figure 3
-    df = df.drop(
-        ['Filename', 'Image #', 'landmarks', 'average_attractive', 'average_unattractive', 'gender', 'race', 'age'],
-        axis=1)
-    corrMatrix = df.corr()
-    fig, ax = plt.subplots()
-    sb.heatmap(corrMatrix)
-    ax.set_xticklabels([i for i in range(1, 36, 2)])
-    ax.set_yticklabels([i for i in range(1, 36, 2)])
-    plt.savefig('figure5.jpg')
-    plt.show()
+    # Figure 5: Correlation matrix for all attributes
+    # df = df.drop(
+    #     ['Filename', 'Image #', 'landmarks', 'average_attractive', 'average_unattractive', 'gender', 'race', 'age'],
+    #     axis=1)
+    # corrMatrix = df.corr()
+    # fig, ax = plt.subplots()
+    # sb.heatmap(corrMatrix)
+    # ax.set_xticklabels([i for i in range(1, 36, 2)])
+    # ax.set_yticklabels([i for i in range(1, 36, 2)])
+    # plt.savefig('figure5.jpg')
+    # plt.show()
 
+    # Figure 6:
+    df = facial_attributes.facial_attributes('aggregated_df_49.csv', None, 0)
+    # min-max normalize the attributes:
+    col_names = df.columns[7:42]
+    for name in col_names:
+        df[name] = (df[name] - df[name].min()) / (df[name].max() - df[name].min())
+    df['average_index'] = df[list(df.columns[7:42])].sum(axis=1)
+    most_attractive = df.sort_values(by=['average_attractive'], ascending=False)[['Filename', 'average_attractive', 'average_index']].head(6)
+    most_average = df.sort_values(by=['average_index'])[['Filename', 'average_index', 'average_attractive']].head(6)
+    print(most_average)
+    print(most_attractive)
+    print(most_average.merge(most_attractive, on='Filename'))
 
+    # 4418 is the most attractive with average index of 10.19, 2711 is the most average with attractive of 0.58
+    # 9055 is the in both top 6 attractive (0.80) and average (6.63)
 
 def summary_table():
+    """ For statistical testing in Results"""
     df = pd.read_csv('facial_attributes.csv')
     print(df.groupby('gender')['average_attractive'].mean())
     print(df.groupby('age')['average_attractive'].mean())
