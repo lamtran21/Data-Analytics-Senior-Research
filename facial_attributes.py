@@ -32,44 +32,33 @@ def facial_attributes(path, output, is_to_csv):
     agg['6_ratio_1_2'] = agg['1_face_length'] / agg['2_face_width_at_eye']
     agg['7_ratio_1_3'] = agg['1_face_length'] / agg['3_face_width_at_mouth']
     agg['8_ratio_4_2'] = agg['4_distance_pupil'] / agg['2_face_width_at_eye']
-    agg['10_lEyebrow_thick'] = agg['landmarks'].apply(lambda x: distance(x[19], midpoint(x[17], x[21])))
-    agg['9_rEyebrow_thick'] = agg['landmarks'].apply(lambda x: distance(x[24], midpoint(x[22], x[26])))
-    agg['11_rEyebrow_arch'] = agg['landmarks'].apply(lambda x: x[24][1] - x[22][1])
-    agg['12_lEyebrow_arch'] = agg['landmarks'].apply(lambda x: x[19][1] - x[21][1])
-    agg['13_rEye_height'] = agg['landmarks'].apply(lambda x: distance(midpoint(x[43], x[44]), midpoint(x[47], x[46])))
-    agg['14_lEye_height'] = agg['landmarks'].apply(lambda x: distance(midpoint(x[37], x[38]), midpoint(x[41], x[40])))
-    agg['15_rEye_width'] = agg['landmarks'].apply(lambda x: distance(x[42], x[45]))
-    agg['16_lEye_width'] = agg['landmarks'].apply(lambda x: distance(x[39], x[36]))
-    agg['17_rEye_size'] = agg['15_rEye_width'] * agg['13_rEye_height']
-    agg['18_lEye_size'] = agg['16_lEye_width'] * agg['14_lEye_height']
-    agg['19_distance_2_eyes'] = agg['landmarks'].apply(lambda x: distance(x[42], x[39]))
-    agg['20_nose_width'] = agg['landmarks'].apply(lambda x: distance(x[31], x[35]))
-    agg['21_nose_length'] = agg['landmarks'].apply(lambda x: distance(x[27], x[33]))
-    agg['22_nose_size'] = agg['20_nose_width'] * agg['21_nose_length']
-    agg['23_cheekbone_width'] = agg['2_face_width_at_eye'] - agg['3_face_width_at_mouth']
-    agg['24_ratio_23_2'] = agg['23_cheekbone_width'] / agg['2_face_width_at_eye']
-    agg['25_thickness_middle_top_lip'] = agg['landmarks'].apply(lambda x: distance(x[51], x[62]))
-    agg['26_thickness_right_top_lip'] = agg['landmarks'].apply(lambda x: distance(x[53], x[64]))
-    agg['27_thickness_left_top_lip'] = agg['landmarks'].apply(lambda x: distance(x[49], x[60]))
-    agg['28_average_thick_top_lip'] = (agg['25_thickness_middle_top_lip'] + agg['26_thickness_right_top_lip'] +
-                                                                            agg['27_thickness_left_top_lip']) / 3
-    agg['29_thickness_middle_lower_lip'] = agg['landmarks'].apply(lambda x: distance(x[66], x[57]))
-    agg['30_thickness_middle_both_lip'] = agg['26_thickness_right_top_lip'] + \
-                                                    agg['29_thickness_middle_lower_lip']
-    agg['31_lip_length'] = agg['landmarks'].apply(lambda x: distance(x[48], x[54]))
-    agg['32_chin_length'] = agg['landmarks'].apply(lambda x: distance(x[8], x[57]))
-    agg['33_right_jaw_length'] = agg['landmarks'].apply(lambda x: distance(x[8], x[12]))
-    agg['34_left_jaw_length'] = agg['landmarks'].apply(lambda x: distance(x[8], x[4]))
-    agg['35_ratio_bottom_mid_face'] = agg['landmarks'].apply(lambda x: x[33][1] - midpoint(x[19],
+    agg['9_Eyebrow_thick'] = agg['landmarks'].apply(lambda x: (distance(x[24], midpoint(x[22], x[26])) + distance(x[19], midpoint(x[17], x[21])))/2)
+    agg['10_Eyebrow_arch'] = agg['landmarks'].apply(lambda x: (x[24][1] - x[22][1] + x[19][1] - x[21][1])/2)
+    agg['11_Eye_height'] = agg['landmarks'].apply(lambda x: (distance(midpoint(x[43], x[44]), midpoint(x[47], x[46])) + distance(midpoint(x[37], x[38]), midpoint(x[41], x[40])))/2)
+    agg['12_Eye_width'] = agg['landmarks'].apply(lambda x: (distance(x[42], x[45])+ distance(x[39], x[36]))/2)
+    agg['13_Eye_size'] = agg['12_Eye_width'] * agg['11_Eye_height']
+    agg['14_distance_2_eyes'] = agg['landmarks'].apply(lambda x: distance(x[42], x[39]))
+    agg['15_nose_width'] = agg['landmarks'].apply(lambda x: distance(x[31], x[35]))
+    agg['16_nose_length'] = agg['landmarks'].apply(lambda x: distance(x[27], x[33]))
+    agg['17_nose_size'] = agg['15_nose_width'] * agg['16_nose_length']
+    agg['18_cheekbone_width'] = agg['2_face_width_at_eye'] - agg['3_face_width_at_mouth']
+    agg['19_ratio_18_2'] = agg['18_cheekbone_width'] / agg['2_face_width_at_eye']
+    agg['20_average_thick_top_lip'] = agg['landmarks'].apply(lambda x: distance(x[51], x[62]) + distance(x[53], x[64]) + distance(x[49], x[60])) / 3
+    agg['21_thickness_middle_lower_lip'] = agg['landmarks'].apply(lambda x: distance(x[66], x[57]))
+    agg['22_thickness_middle_both_lip'] = agg['landmarks'].apply(lambda x: distance(x[51], x[62]) + distance(x[66], x[57]))
+    agg['23_lip_length'] = agg['landmarks'].apply(lambda x: distance(x[48], x[54]))
+    agg['24_chin_length'] = agg['landmarks'].apply(lambda x: distance(x[8], x[57]))
+    agg['25_jaw_length'] = agg['landmarks'].apply(lambda x: distance(x[8], x[12]) + distance(x[8], x[4]))
+    agg['26_ratio_bottom_mid_face'] = agg['landmarks'].apply(lambda x: x[33][1] - midpoint(x[19],
                                         x[24])[1]) / agg['landmarks'].apply(lambda x: distance(x[8], x[33]))
     # subtract each value from the average of each column
-    for i in range(num_col, num_col+35):
-        agg.iloc[:, i] = agg.iloc[:, i].apply(lambda x: abs(x - agg.iloc[:, i].mean()))
+    for i in range(num_col, num_col+26):
+        mean = agg.iloc[:, i].mean()
+        agg.iloc[:, i] = agg.iloc[:, i].apply(lambda x: abs(x - mean))
     if is_to_csv == 1:
         agg.to_csv(output, index=False)
     return agg
 
 
-
 if __name__ == "__main__":
-    facial_attributes('aggregated_df.csv', 'facial_attributes.csv', 1)
+    facial_attributes('aggregated_df2.csv', 'facial_attributes2.csv', 1)

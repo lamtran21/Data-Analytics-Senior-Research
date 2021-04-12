@@ -10,61 +10,37 @@ import seaborn as sb
 from scipy import stats
 import statsmodels.api as sm
 import facial_attributes
+import cv2
 
 
 def base_model():
     """ A linear regression model that serves as a baseline. The goal for the random forest model is to
     have lower mean_squared_error than this model"""
-    df = pd.read_csv('facial_attributes.csv')
-    # one-hot encoding for gender, race, and age
-    df['gender'] = df['gender'].replace([0, 1], ['female', 'male'])
-    df['age'] = df['age'].replace([1, 2, 3, 4, 5], ['less_20', '20_30', '30_45', '45-60', '60+'])
-    df['race'] = df['race'].replace([0, 1, 2, 3, 4, 5, 6],
-                                    ['other', 'white', 'black', 'east_asian', 'south_asian', 'hispanic',
-                                     'middle_eastern'])
-    df = pd.get_dummies(df, columns=['age', 'gender', 'race'])
+    df = pd.read_csv('facial_attributes2.csv')
 
     # transform everything to np.array
-    attractive_rating = np.array(df['average_attractive'])
+    attractive_rating = np.array(df['attractive'])
     # remove unused columns from df (axis = 1 refers to column)
     df = df.drop(
-        ['Filename', 'Image #', 'landmarks', 'average_attractive', 'average_unattractive'], axis=1)
-    # convert to numpy array
-    # df1 = np.array(df)
-    # # base Linear model
-    # X2 = sm.add_constant(df1)
-    # est = sm.OLS(attractive_rating, X2)
-    # est2 = est.fit()
-    # print(est2.summary())
-
+        ['Filename', 'Image #', 'landmarks'], axis=1)
     # get the sign of each variable by running univariate model
-    for i in range(10):
+    for i in range(26):
         col = df.iloc[:, i]
         col = np.array(col)
 
         X = sm.add_constant(col)
-        est = sm.OLS(attractive_rating, X)
-        est2 = est.fit()
-        print(est2.summary())
+        model = sm.OLS(attractive_rating, X)
+        result = model.fit()
+        print(i+1, result.params[1], result.pvalues[1] < 0.05)
 
 
 def random_forest():
-    df = pd.read_csv('facial_attributes.csv')
-
-    # one-hot encoding for gender, race, and age
-    df['gender'] = df['gender'].replace([0, 1], ['female', 'male'])
-    df['race'] = df['race'].replace([0, 1, 2, 3, 4, 5, 6],
-                                    ['other', 'white', 'black', 'east_asian', 'south_asian', 'hispanic',
-                                     'middle_eastern'])
-    df['age'] = df['age'].replace([1, 2, 3, 4, 5], ['less_20', '20_30', '30_45', '45-60', '60+'])
-    # df = pd.get_dummies(df, columns=['age', 'gender', 'race'])
+    df = pd.read_csv('facial_attributes2.csv')
 
     # transform everything to np.array
-    attractive_rating = np.array(df['average_attractive'])
+    attractive_rating = np.array(df['attractive'])
     # remove unused columns from df (axis = 1 refers to column)
-    df = df.drop(
-        ['Filename', 'Image #', 'landmarks', 'average_attractive', 'average_unattractive', 'gender', 'race', 'age'],
-        axis=1)
+    df = df.drop(['Filename', 'Image #', 'landmarks', 'attractive'], axis=1)
     # saving column names for visualization
     df_cols = list(df.columns)
     # convert to numpy array
@@ -76,21 +52,18 @@ def random_forest():
     # control for run time
     start_time = time.time()
 
-    # Instantiate model with 1000 decision trees
-    rf = RandomForestRegressor(n_estimators=1000, random_state=21)
+    # Instantiate model with 100 decision trees
+    rf = RandomForestRegressor(n_estimators=100, random_state=21)
     # Train the model on training data
     rf.fit(train_x, train_y)
     # Use the forest's predict method on the test data
     predictions = rf.predict(test_x)
     # Calculate the absolute errors
     errors = abs(predictions - test_y)
+    plt.plot(predictions, test_y, 'o', color='black')
+    plt.show()
     # Print out the mean absolute error (mae)
     print('Mean Absolute Error:', round(np.mean(errors), 2), 'degrees.')
-    # Calculate mean absolute percentage error (MAPE)
-    mape = 100 * (errors / test_y)
-    # Calculate and display accuracy
-    accuracy = 100 - np.mean(mape)
-    print('Model accuracy:', round(accuracy, 2), '%.')
     print("---%s seconds ---" % (time.time() - start_time))
 
     # Get numerical variable importance
@@ -131,24 +104,50 @@ def visual():
     # plt.show()
 
     # Figure 6:
-    df = facial_attributes.facial_attributes('aggregated_df_49.csv', None, 0)
-    # min-max normalize the attributes:
-    col_names = df.columns[7:42]
-    for name in col_names:
-        df[name] = (df[name] - df[name].min()) / (df[name].max() - df[name].min())
-    df['average_index'] = df[list(df.columns[7:42])].sum(axis=1)
-    most_attractive = df.sort_values(by=['average_attractive'], ascending=False)[['Filename', 'average_attractive', 'average_index']].head(6)
-    most_average = df.sort_values(by=['average_index'])[['Filename', 'average_index', 'average_attractive']].head(6)
-    print(most_average)
-    print(most_attractive)
-    print(most_average.merge(most_attractive, on='Filename'))
+    # df = facial_attributes.facial_attributes('aggregated_df_49.csv', None, 0)
+    # # min-max normalize the attributes:
+    # col_names = df.columns[7:42]
+    # for name in col_names:
+    #     df[name] = (df[name] - df[name].min()) / (df[name].max() - df[name].min())
+    # df['average_index'] = df[list(df.columns[7:42])].sum(axis=1)
+    # most_attractive = df.sort_values(by=['average_attractive'], ascending=False)[['Filename', 'average_attractive', 'average_index']].head(6)
+    # most_average = df.sort_values(by=['average_index'])[['Filename', 'average_index', 'average_attractive']].head(6)
+    # print(most_average)
+    # print(most_attractive)
+    # print(most_average.merge(most_attractive, on='Filename'))
 
     # 4418 is the most attractive with average index of 10.19, 2711 is the most average with attractive of 0.58
     # 9055 is the in both top 6 attractive (0.80) and average (6.63)
 
+    font = {'family': 'serif',
+            'weight': 'normal'
+            }
+    image1 = cv2.imread('L:/Spring 2021/DA 401/10k US Faces Data/49faces/Publication Friendly 49-Face Database/49 Face images/4418664902_10c6e5d831_o.jpg')
+    image1 = cv2.resize(image1, (160, 200))
+    image2 = cv2.imread('L:/Spring 2021/DA 401/10k US Faces Data/49faces/Publication Friendly 49-Face Database/49 Face images/2711735584_08733d1e45_o.jpg')
+    image2 = cv2.resize(image2, (160, 200))
+    image3 = cv2.imread("L:/Spring 2021/DA 401/10k US Faces Data/49faces/Publication Friendly 49-Face Database/49 Face images/9053039024_d553f12079_o.jpg")
+    image3 = cv2.resize(image3, (160, 200))
+    fig = plt.figure()
+    fig.suptitle('Figure 4: (a) The most attractive face (b) The most average face\n(c) A face that is among the top 6 most attractive '
+                 'and average faces', y=0.255, fontsize=12, fontdict=font)
+
+    plt.subplot(1, 3, 1), plt.imshow(image1[:, :, ::-1], 'gray')
+    plt.axis('off')
+    plt.title('(a)', fontsize=10, fontdict=font)
+    plt.subplot(1, 3, 2), plt.imshow(image2[:, :, ::-1], 'gray')
+    plt.axis('off')
+    plt.title('(b)', fontsize=10, fontdict=font)
+    plt.subplot(1, 3, 3), plt.imshow(image3[:, :, ::-1], 'gray')
+    plt.title('(c)', fontsize=10, fontdict=font)
+    plt.axis('off')
+    plt.savefig('figure6.jpg')  # To save figure
+    plt.show()  # To show figure
+
+
 def summary_table():
     """ For statistical testing in Results"""
-    df = pd.read_csv('facial_attributes.csv')
+    df = pd.read_csv('facial_attributes.csv')  #todo: read in demographic instead then might merge with agg2
     print(df.groupby('gender')['average_attractive'].mean())
     print(df.groupby('age')['average_attractive'].mean())
     print(df.groupby('race')['average_attractive'].mean())
@@ -159,6 +158,7 @@ def summary_table():
 
 if __name__ == "__main__":
     # base_model()
-    # random_forest()
-    visual()
+    random_forest()
+    # visual()
     # summary_table()
+
