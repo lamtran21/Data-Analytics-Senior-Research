@@ -13,7 +13,7 @@ def midpoint(p1, p2):
     return [(p1[0] + p2[0]) // 2, (p1[1] + p2[1]) // 2]
 
 
-def facial_attributes(path, output, is_to_csv):
+def facial_attributes(path, output=None, is_to_csv=0):
     """ A function that creates 35 facial attributes from facial landmarks"""
 
     agg = pd.read_csv(path)
@@ -61,4 +61,5 @@ def facial_attributes(path, output, is_to_csv):
 
 
 if __name__ == "__main__":
-    facial_attributes('aggregated_df2.csv', 'facial_attributes2.csv', 1)
+    # facial_attributes('aggregated_df.csv', 'facial_attributes.csv', 1)
+    facial_attributes('aggregated_df_with_demo.csv', 'facial_attributes_with_demo.csv', 1)
