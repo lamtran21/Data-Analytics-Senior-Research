@@ -14,7 +14,7 @@ def midpoint(p1, p2):
 
 
 def facial_attributes(path, output=None, is_to_csv=0):
-    """ A function that creates 35 facial attributes from facial landmarks"""
+    """ A function that creates 26 facial attributes from facial landmarks"""
 
     agg = pd.read_csv(path)
     # reformat the landmarks column

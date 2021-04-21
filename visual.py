@@ -2,92 +2,101 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 import numpy as np
-import cv2
 from scipy import stats
+import facial_attributes
 
+
+SMALL_SIZE = 10
+MEDIUM_SIZE = 12
+BIGGER_SIZE = 14
+
+plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
+plt.rc('axes', titlesize=SMALL_SIZE)     # fontsize of the axes title
+plt.rc('axes', labelsize=MEDIUM_SIZE)    # fontsize of the x and y labels
+plt.rc('xtick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
+plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
 
 def visualize_demo():
     """ For visualizations in final report"""
-    df = pd.read_csv('facial_attributes.csv')
-
-    # Figure 1: Distribution of attractiveness rating
-    # sb.set_style('whitegrid')
-    # sb.distplot(df['attractive'], kde=False)
+    # df = pd.read_csv('facial_attributes.csv')
+    #
+    # # Figure 2: Distribution of attractiveness rating
+    # sns.set_style('whitegrid')
+    # sns.distplot(df['attractive'], kde=False)
     # plt.xlabel('Normalized attractiveness ratings')
     # plt.ylabel('Frequency')
-    # plt.savefig('figure1.jpg')
     # plt.show()
 
-    # Figure 2
+    # Figure 3, 4, 5
     df_demo = pd.read_csv('facial_attributes_with_demo.csv')
-    df_demo['image_race'] = df_demo['image_race'].replace({0: 'Other', 1: 'White', 2: 'Black', 3: 'East Asian', 4: 'South Asian', 5: 'Hispanic', 6: 'Middle Eastern'})
-    df_demo['rater_race'] = df_demo['rater_race'].replace({0: 'Other', 1: 'White', 2: 'Black', 3: 'East Asian', 4: 'South Asian', 5: 'Hispanic', 6: 'Middle Eastern'})
-    df_demo['image_gender'] = df_demo['image_gender'].replace({0: 'Female', 1: 'Male'})
-    df_demo['rater_gender'] = df_demo['rater_gender'].replace({0: 'Female', 1: 'Male'})
+    #
+    # df_demo['image_race'] = df_demo['image_race'].replace({0: 'Other', 1: 'White', 2: 'Black', 3: 'East Asian', 4: 'South Asian', 5: 'Hispanic', 6: 'Middle Eastern'})
+    # df_demo['rater_race'] = df_demo['rater_race'].replace({0: 'Other', 1: 'White', 2: 'Black', 3: 'East Asian', 4: 'South Asian', 5: 'Hispanic', 6: 'Middle Eastern'})
+    # df_demo['image_gender'] = df_demo['image_gender'].replace({0: 'Female', 1: 'Male'})
+    # df_demo['rater_gender'] = df_demo['rater_gender'].replace({0: 'Female', 1: 'Male'})
+    # df_demo['image_age'] = df_demo['image_age'].replace({1: '<20', 2: '20-30', 3: '30-45', 4: '45-60', 5: '60+'})
+    # df_demo['rater_age'] = df_demo['rater_age'].replace({1: '<20', 2: '20-30', 3: '30-45', 4: '45-60', 5: '60+'})
 
-    heatmap1_data = pd.pivot_table(df_demo.loc[(df_demo['image_race'] != 'Other') & (df_demo['rater_race'] != 'Other')],
-                                                values='attractive',
-                                                index=['image_race'],
-                                                columns='rater_race')
-    sns.heatmap(heatmap1_data, cmap="YlGnBu", annot=True)
-    plt.show()
-
-    heatmap2_data = pd.pivot_table(df_demo,
-                                   values='attractive',
-                                   index=['image_gender'],
-                                   columns='rater_gender')
-    sns.heatmap(heatmap2_data, cmap="YlGnBu", annot=True)
-    plt.show()
-
+    # heatmap1_data = pd.pivot_table(df_demo.loc[(df_demo['image_race'] != 'Other') & (df_demo['rater_race'] != 'Other')],
+    #                                             values='attractive',
+    #                                             index=['image_race'],
+    #                                             columns='rater_race')
+    # sns.heatmap(heatmap1_data, cmap="YlGnBu", annot=True, vmin=0, vmax=1,
+    #             yticklabels=['White', 'Black', 'E. Asian', 'S. Asian', 'Middle Eastern', 'Hispanic'],
+    #             xticklabels=['White', 'Black', 'E. Asian', 'S. Asian', 'Middle Eastern', 'Hispanic'])
+    # plt.xlabel('Race of Raters')
+    # plt.ylabel('Race of Images')
+    # plt.subplots_adjust(bottom=0.3, left=0.2)
+    # plt.show()
+    #
+    # heatmap2_data = pd.pivot_table(df_demo,
+    #                                values='attractive',
+    #                                index=['image_gender'],
+    #                                columns='rater_gender')
+    # sns.heatmap(heatmap2_data, cmap="YlGnBu", annot=True, vmin=0, vmax=1)
+    # plt.xlabel('Gender of Raters')
+    # plt.ylabel('Gender of Images')
+    # plt.show()
+    #
     heatmap3_data = pd.pivot_table(df_demo,
                                    values='attractive',
                                    index=['image_age'],
                                    columns='rater_age')
-    sns.heatmap(heatmap3_data, cmap="YlGnBu", annot=True)
+    sns.heatmap(heatmap3_data, cmap="YlGnBu", annot=True, vmin=0, vmax=1,
+                yticklabels=['<20', '20-30', '30-45', '45-60', '60+'],
+                xticklabels=['<20', '20-30', '30-45', '45-60', '60+'])
+    plt.xlabel('Age of Raters')
+    plt.ylabel('Age of Images')
     plt.show()
 
+    # Figure 10:
+    df = facial_attributes.facial_attributes('aggregated_df_49.csv')
+    # min-max normalize the attributes:
+    col_names = df.columns[4:]
+    for name in col_names:
+        df[name] = (df[name] - df[name].min()) / (df[name].max() - df[name].min())
 
-    # Figure 6:
-    # df = facial_attributes.facial_attributes('aggregated_df_49.csv', None, 0)
-    # # min-max normalize the attributes:
-    # col_names = df.columns[7:42]
-    # for name in col_names:
-    #     df[name] = (df[name] - df[name].min()) / (df[name].max() - df[name].min())
-    # df['average_index'] = df[list(df.columns[7:42])].sum(axis=1)
-    # most_attractive = df.sort_values(by=['average_attractive'], ascending=False)[['Filename', 'average_attractive', 'average_index']].head(6)
-    # most_average = df.sort_values(by=['average_index'])[['Filename', 'average_index', 'average_attractive']].head(6)
-    # print(most_average)
-    # print(most_attractive)
-    # print(most_average.merge(most_attractive, on='Filename'))
+    df['average_index'] = df[list(df.columns[4:])].sum(axis=1)
+    new_df = df.groupby('Filename').agg({'attractive': 'mean'})  # get the average attractiveness rating for each image
+    most_attractive = new_df.sort_values(by=['attractive'], ascending=False)
+    most_average = df[['Filename', 'average_index']].groupby('Filename').first().reset_index().sort_values(by=['average_index'])
 
-    # 4418 is the most attractive with average index of 10.19, 2711 is the most average with attractive of 0.58
-    # 9055 is the in both top 6 attractive (0.80) and average (6.63)
+    print(most_average.head(1))  # print most attractive image
+    print(most_attractive.head(1))  # print most average image
+    merge = pd.merge(most_attractive, most_average, how='outer', on='Filename').reset_index()
+    print(merge['attractive'].describe())  # find min-max of attractiveness
+    print(merge['average_index'].describe())  # find min-max of averageness
+    merge = merge[(merge['Filename'] == '494043893_511442d9ca_z.jpg') | (merge['Filename'] == '4418664902_10c6e5d831_o.jpg')]
+    print(merge)  # print both attractiveness + averageness of the most attractive image and the most average image
+    # find image that is in top 6 of both attractiveness and averageness
+    print(pd.merge(most_attractive.head(6), most_average.head(6), on='Filename'))
 
-    # font = {'family': 'serif',
-    #         'weight': 'normal'
-    #         }
-    # image1 = cv2.imread('L:/Spring 2021/DA 401/10k US Faces Data/49faces/Publication Friendly 49-Face Database/49 Face images/4418664902_10c6e5d831_o.jpg')
-    # image1 = cv2.resize(image1, (160, 200))
-    # image2 = cv2.imread('L:/Spring 2021/DA 401/10k US Faces Data/49faces/Publication Friendly 49-Face Database/49 Face images/2711735584_08733d1e45_o.jpg')
-    # image2 = cv2.resize(image2, (160, 200))
-    # image3 = cv2.imread("L:/Spring 2021/DA 401/10k US Faces Data/49faces/Publication Friendly 49-Face Database/49 Face images/9053039024_d553f12079_o.jpg")
-    # image3 = cv2.resize(image3, (160, 200))
-    # fig = plt.figure()
-    # fig.suptitle('Figure 4: (a) The most attractive face (b) The most average face\n(c) A face that is among the top 6 most attractive '
-    #              'and average faces', y=0.255, fontsize=12, fontdict=font)
-    #
-    # plt.subplot(1, 3, 1), plt.imshow(image1[:, :, ::-1], 'gray')
-    # plt.axis('off')
-    # plt.title('(a)', fontsize=10, fontdict=font)
-    # plt.subplot(1, 3, 2), plt.imshow(image2[:, :, ::-1], 'gray')
-    # plt.axis('off')
-    # plt.title('(b)', fontsize=10, fontdict=font)
-    # plt.subplot(1, 3, 3), plt.imshow(image3[:, :, ::-1], 'gray')
-    # plt.title('(c)', fontsize=10, fontdict=font)
-    # plt.axis('off')
-    # plt.savefig('figure6.jpg')  # To save figure
-    # plt.show()  # To show figure
+    # 4418 is the most attractive with average index of 7.83 (range: 3.57 - 14.25), attractive index of 0.84 (range: 0.19 - 0.84)
+    # 4940 is the most average with average index of 3.57 (range: 3.57 - 14.25), attractive index of 0.62 (range: 0.19 - 0.84)
+    # 9055 is the in both top 6 attractive (0.80) and average (5.05)
 
 
 def summary_table_image():
@@ -154,40 +163,46 @@ def summary_table_rater():
     print('ANOVA p-value: ', p)
 
 
-def summary_table_cross():
-    df = pd.read_csv('facial_attributes_with_demo.csv')
-    print(pd.crosstab(df['image_race'], df['rater_race'], values=df['attractive'], aggfunc=np.mean).apply(lambda x: round(x,2), axis=1))
-    print(pd.crosstab(df['image_gender'], df['rater_gender'], values=df['attractive'], aggfunc=np.mean).apply(lambda x: round(x,2), axis=1))
-
 
 def visualize_attribute():
     df = pd.read_csv('facial_attributes.csv')
     df = df.groupby(['Filename', 'Image #']).first().reset_index()
-    # print(df.iloc[:, 4:].describe())
-    # print(df.columns)
+
+    # Figure 6, 7, 8
+    # sns.set_style('whitegrid')
     # sns.distplot(df['13_Eye_size'], kde=False)
+    # plt.xlabel('Difference between eye sizes and its mean')
+    # plt.ylabel('Frequency')
     # plt.show()
-    # sns.distplot(df['1_face_length'], kde=False)
+    #
+    # sns.distplot(df['26_ratio_bottom_mid_face'], kde=False)
+    # plt.xlabel('Difference between ratios of chin-nostril to nostril-eyebrows and its mean')
+    # plt.ylabel('Frequency')
     # plt.show()
+    #
     # sns.distplot(df['25_jaw_length'], kde=False)
+    # plt.xlabel('Difference between jaw lengths and its mean')
+    # plt.ylabel('Frequency')
     # plt.show()
 
-    normalized_df = (df.iloc[:, 4:] - df.iloc[:, 4:].min()) / (df.iloc[:, 4:].max() - df.iloc[:, 4:].min())
+    # Figure 9
+    sns.set_style('whitegrid')
     df['sum'] = df.iloc[:, 4:].sum(axis=1, skipna=True)
 
     x = df['sum']
     y = df['attractive']
-    plt.scatter(x, y, color='black', s=0.7, alpha=0.5)
+    plt.scatter(x, y, color='lightskyblue', s=0.7, alpha=0.5)
 
     z = np.polyfit(x, y, 1)
     p = np.poly1d(z)
-    plt.plot(x, p(x), "r--")
-
+    plt.plot(x, p(x), "k--")
+    plt.xlabel('Sum of the difference between all features and their means')
+    plt.ylabel('Attractiveness ratings')
     plt.show()
 
+
 if __name__ == "__main__":
-    # visualize_demo()
+    visualize_demo()
     # summary_table_image()
     # summary_table_rater()
-    # summary_table_cross()
-    visualize_attribute()
+    # visualize_attribute()

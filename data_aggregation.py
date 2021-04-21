@@ -115,11 +115,11 @@ def data_aggregation_49():
 
     # merge datasets together
     agg = pd.concat([attributes, demographic], axis=0)
-    agg = pd.merge(agg, landmarks, on=['Image #'])
+    agg = pd.merge(agg, landmarks, on=['Filename'])
 
     agg.to_csv('aggregated_df_49.csv', index=False)
 
 
 if __name__ == "__main__":
-    data_aggregation()
-    # data_aggregation_49()
+    # data_aggregation()
+    data_aggregation_49()
