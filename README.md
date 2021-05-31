@@ -12,7 +12,7 @@ facical_attributes.py: reads in aggregated_df and produce facial attributes from
 
 random_forest.py: reads in facial_attributes.csv and run linear regression + random forest model
 
-.jpg files are visualization to be included in the report.
+_49 files are files to read in 49 publication-friendly images (images that could be shown to the public as the 2,222 images in the training set cannot be) and produce Figure 1 in the report. Codes in the _49 files are similar to the main files.
 
 ## Reference
 
